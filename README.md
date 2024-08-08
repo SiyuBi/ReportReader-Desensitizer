@@ -35,10 +35,15 @@ The tool can be run from the command line with the following arguments:
 ```sh
 --input_dir: Directory containing input PDF files. Default is ./input.
 --output_dir: Directory to save output masked images. Default is ./output.
+--file_suffix: Custom suffix for masked pdf files. Default is none.
 --print_details: Display filenames, names, and masked regions while working. Default is False.
 ```
 
 ### Example Command
 ```sh
-python mask_jpg.py --input_dir ./input --output_dir ./output --print_details True
+python mask_jpg.py --input_dir ./input --output_dir ./output --file_suffix "_masked" --print_details True
 ```
+
+### Whitelist
+
+The file "whitelist.txt" allows specification of certain names or terms that should not be masked. To modify the whitelist, edit whitelist.txt directly using comma-separated strings.

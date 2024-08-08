@@ -9,9 +9,8 @@ import os
 import argparse
 
 import time
-start_time = time.time()
 
-def mask_pdf(pdf_path, output_dir=".\\output", print_details=False):
+def mask_pdf(pdf_path, output_dir=".\\output", file_suffix="_masked", print_details=False):
     processed_images = []
 
     with fitz.open(pdf_path) as pdf:
@@ -40,21 +39,18 @@ def mask_pdf(pdf_path, output_dir=".\\output", print_details=False):
             processed_images.append(processed_img)
 
     if processed_images:
-        output_pdf_path = os.path.join(output_dir, os.path.splitext(os.path.basename(pdf_path))[0]+"_masked"+".pdf")
+        output_pdf_path = os.path.join(output_dir, os.path.splitext(os.path.basename(pdf_path))[0] + file_suffix + ".pdf")
         processed_images[0].save(output_pdf_path, save_all=True, append_images=processed_images[1:])
         if print_details:
             print(f"PDF saved as {output_pdf_path}")
 
-def main(input_dir, output_dir, print_details):
+def main(input_dir, output_dir, file_suffix, print_details):
     start_time = time.time()
 
     for file_name in os.listdir(input_dir):
         if file_name.endswith('.pdf'):
             pdf_path = os.path.join(input_dir, file_name)
-            file_output_dir = os.path.join(output_dir)
-            if not os.path.exists(file_output_dir):
-                os.makedirs(file_output_dir)
-            mask_pdf(pdf_path, file_output_dir, print_details)
+            mask_pdf(pdf_path, output_dir, file_suffix, print_details)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -62,26 +58,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mask sensitive information in PDFs.")
     parser.add_argument("--input_dir", default=".\input", help="Directory containing input PDF files.")
     parser.add_argument("--output_dir", default=".\output", help="Directory to save output masked images.")
+    parser.add_argument("--file_suffix", default="", help="Custom suffix for masked pdf files.")
     parser.add_argument("--print_details", type=bool, default=False, help="Display filenames, names, and masked regions while working. True/False")
     args = parser.parse_args()
 
-    main(args.input_dir, args.output_dir, args.print_details)
-
-def main(input_dir, output_dir, print_details):
-    start_time = time.time()
-
-    for file_name in os.listdir(input_dir):
-        if file_name.endswith('.pdf'):
-            pdf_path = os.path.join(input_dir, file_name)
-            mask_pdf(pdf_path, output_dir, print_details)
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Mask sensitive information in PDFs.")
-    parser.add_argument("--input_dir", default=".\input", help="Directory containing input PDF files.")
-    parser.add_argument("--output_dir", default=".\output", help="Directory to save output masked images.")
-    parser.add_argument("--print_details", type=bool, default=False, help="Display filenames, names, and masked regions while working. True/False")
-    args = parser.parse_args()
-
-    main(args.input_dir, args.output_dir, args.print_details)
+    main(args.input_dir, args.output_dir, args.file_suffix, args.print_details)
