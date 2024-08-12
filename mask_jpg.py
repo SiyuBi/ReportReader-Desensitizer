@@ -1,4 +1,4 @@
-from convertPDF import mask_name, convertPDF
+from convertPDF import identify_areas, mask_areas
 
 import fitz
 from PIL import Image
@@ -10,7 +10,7 @@ import argparse
 
 import time
 
-def mask_pdf(pdf_path, output_dir=".\\output", file_suffix="_masked", print_details=False):
+def mask_pdf(pdf_path, output_dir=".\\output", file_suffix="_masked", print_details=False, mask_names=True, mask_numbers=True):
     processed_images = []
 
     with fitz.open(pdf_path) as pdf:
@@ -30,12 +30,12 @@ def mask_pdf(pdf_path, output_dir=".\\output", file_suffix="_masked", print_deta
                 print(f"Processing page {pg+1}")
 
             # Pass image data directly to convertPDF
-            regions = convertPDF(np.array(img_pil), print_details=print_details)
+            regions = identify_areas(np.array(img_pil), print_details=print_details, mask_names=mask_names, mask_numbers=mask_numbers)
             
             if print_details:
                 print(regions)
 
-            processed_img = mask_name(regions, img_pil)
+            processed_img = mask_areas(regions, img_pil)
             processed_images.append(processed_img)
 
     if processed_images:
@@ -44,13 +44,13 @@ def mask_pdf(pdf_path, output_dir=".\\output", file_suffix="_masked", print_deta
         if print_details:
             print(f"PDF saved as {output_pdf_path}")
 
-def main(input_dir, output_dir, file_suffix, print_details):
+def main(input_dir, output_dir, file_suffix, print_details, mask_names, mask_numbers):
     start_time = time.time()
 
     for file_name in os.listdir(input_dir):
         if file_name.endswith('.pdf'):
             pdf_path = os.path.join(input_dir, file_name)
-            mask_pdf(pdf_path, output_dir, file_suffix, print_details)
+            mask_pdf(pdf_path, output_dir, file_suffix, print_details, mask_names, mask_numbers)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -60,6 +60,9 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", default=".\output", help="Directory to save output masked images.")
     parser.add_argument("--file_suffix", default="", help="Custom suffix for masked pdf files.")
     parser.add_argument("--print_details", type=bool, default=False, help="Display filenames, names, and masked regions while working. True/False")
+    parser.add_argument("--mask_names", type=bool, default=True, help="Whether to mask identified names in the PDF. Set to True to enable masking, or False to disable.")
+    parser.add_argument("--mask_numbers", type=bool, default=True, help="Whether to mask identified numbers in the PDF. Set to True to enable masking, or False to disable.")
+
     args = parser.parse_args()
 
-    main(args.input_dir, args.output_dir, args.file_suffix, args.print_details)
+    main(args.input_dir, args.output_dir, args.file_suffix, args.print_details, args.mask_names, args.mask_numbers)

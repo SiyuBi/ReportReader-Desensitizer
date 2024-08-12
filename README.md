@@ -1,6 +1,6 @@
 # ReportReader-Desensitizer
 
-ReportReader-Desensitizer is a tool designed to mask sensitive information within PDF images. It utilizes PaddleOCR and HANLP to identify and redact sensitive text in the images generated from the PDF pages.
+ReportReader-Desensitizer is a tool designed to mask sensitive information within PDF images. It utilizes PaddleOCR and HANLP to identify and redact sensitive text and numbers in the images generated from the PDF pages.
 
 
 ## Installation
@@ -36,12 +36,14 @@ The tool can be run from the command line with the following arguments:
 --input_dir: Directory containing input PDF files. Default is ./input.
 --output_dir: Directory to save output masked images. Default is ./output.
 --file_suffix: Custom suffix for masked pdf files. Default is none.
+--mask_names: Whether to mask identified names in the PDF. Set to True to enable masking, or False to disable. Default is True.
+--mask_numbers: Whether to mask identified numbers in the PDF. Set to True to enable masking, or False to disable. Default is True.
 --print_details: Display filenames, names, and masked regions while working. Default is False.
 ```
 
 ### Example Command
 ```sh
-python mask_jpg.py --input_dir ./input --output_dir ./output --file_suffix "_masked" --print_details True
+python mask_jpg.py --input_dir ./input --output_dir ./output --file_suffix "_masked" --mask_names True --mask_numbers True --print_details True
 ```
 
 ### Whitelist

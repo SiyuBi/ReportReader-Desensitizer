@@ -1,6 +1,6 @@
 from paddleocr import PaddleOCR, draw_ocr
 from paddleocr import PPStructure,draw_structure_result,save_structure_res
-
+import re
 import hanlp
 hanlp.pretrained.mtl.ALL
 
@@ -23,38 +23,39 @@ else:
     read_whitelist = []
 # print(read_whitelist)
 
-def convertPDF(image, whitelist=read_whitelist, print_details=False):
+def identify_areas(image, whitelist=read_whitelist, print_details=False, mask_names=True, mask_numbers=True):
     result = ocr.ocr(image, cls=True)
 
     txt_coords = {}
     name_coords = []
+    number_coords = []
+    number_pattern = re.compile(r'\d{7,}')  # Pattern for numbers with 7 or more digits
+
     for idx in range(len(result)):
         res = result[idx]
         boxes = [line[0] for line in res]
         txts = [line[1][0] for line in res]
+        
         for i, txt in enumerate(txts):
             txt_coords[txt] = boxes[i]
-            ner_result = HanLP([txt], tasks='ner*')
-            for name in ner_result['ner/pku'][0]:
-                if (name[1] == 'nr' and name[0] not in whitelist):
+            if mask_names:
+                # Identify names using HanLP
+                ner_result = HanLP([txt], tasks='ner*')
+                for name in ner_result['ner/pku'][0]:
+                    if name[1] == 'nr' and name[0] not in whitelist:
+                        if print_details:
+                            print(name, 'person')
+                        name_coords.append(txt_coords[txt])
+            if mask_numbers:
+                # Identify numbers based on the pattern
+                if number_pattern.search(txt):
                     if print_details:
-                        print(name, 'person')
-                    name_coords.append(txt_coords[txt])
+                        print(txt, 'number')
+                    number_coords.append(txt_coords[txt])
+    coords_to_mask = name_coords + number_coords
+    return coords_to_mask
 
-    return name_coords
-
-def getAllboxes(img_path):
-    result = ocr.ocr(img_path, cls=True)
-
-    for idx in range(len(result)):
-        res = result[idx]
-        # image = imgs[idx]
-        boxes = [line[0] for line in res]
-        txts = [line[1][0] for line in res]
-
-    return boxes, txts
-
-def mask_name(name_coords, img):
+def mask_areas(name_coords, img):
     coords = [[(region[0][0], region[0][1]), (region[1][0], region[1][1]), (region[2][0], region[2][1]), (region[3][0], region[3][1])] for region in name_coords]
 
     for coord in coords:
@@ -65,6 +66,7 @@ def mask_name(name_coords, img):
         img.paste(mosaic, mask=mask)
 
     return img
+
 
 # boxes, txts = getAllboxes(img_path)
 # for i in range(len(boxes)):
